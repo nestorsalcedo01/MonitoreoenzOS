@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador Interactivo de Monitores z/OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-button.active {
+            border-color: #0ea5e9; /* sky-500 */
+            color: #0ea5e9;
+            font-weight: 600;
+        }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        h2 { font-size: 1.75rem; margin-bottom: 1rem; color: #0369a1; /* sky-700 */ }
+        h3 { font-size: 1.5rem; margin-bottom: 0.75rem; color: #075985; /* sky-800 */ }
+        h4 { font-size: 1.25rem; margin-bottom: 0.5rem; color: #0c4a6e; /* sky-900 */ }
+        .card { background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); padding: 1.5rem; margin-bottom: 1.5rem;}
+        .table-wrapper { overflow-x: auto; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; /* slate-200 */ }
+        th { background-color: #f1f5f9; /* slate-100 */ }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-700">
+
+    <header class="bg-sky-700 text-white p-6 shadow-md">
+        <div class="container mx-auto">
+            <h1 class="text-3xl font-bold">Comparador Interactivo de Monitores z/OS</h1>
+            <p class="text-sky-100">Un análisis de TMON, MainView y OMEGAMON</p>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto flex space-x-1 overflow-x-auto px-4">
+            <button data-target="introduccion" class="nav-button py-4 px-3 text-slate-600 hover:text-sky-600 focus:outline-none">Introducción</button>
+            <button data-target="comparativa" class="nav-button py-4 px-3 text-slate-600 hover:text-sky-600 focus:outline-none">Comparativa General</button>
+            <button data-target="tmon" class="nav-button py-4 px-3 text-slate-600 hover:text-sky-600 focus:outline-none">Rocket TMON</button>
+            <button data-target="mainview" class="nav-button py-4 px-3 text-slate-600 hover:text-sky-600 focus:outline-none">BMC MainView / AMI Ops</button>
+            <button data-target="omegamon" class="nav-button py-4 px-3 text-slate-600 hover:text-sky-600 focus:outline-none">IBM OMEGAMON</button>
+            <button data-target="conclusiones" class="nav-button py-4 px-3 text-slate-600 hover:text-sky-600 focus:outline-none">Conclusiones</button>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-6">
+        <section id="introduccion" class="content-section card">
+            <h2>Introducción y Resumen Ejecutivo</h2>
+            <p class="mb-4">Esta aplicación interactiva presenta un análisis comparativo de tres soluciones prominentes de monitorización para entornos z/OS: Rocket TMON for z/OS, BMC MainView for z/OS (BMC AMI Ops), e IBM OMEGAMON for z/OS. El objetivo es ayudar a los profesionales de z/OS a tomar decisiones informadas alineando las fortalezas de cada producto con los requisitos de su organización.</p>
+            <h3 class="mt-6">Propósito de esta Aplicación Interactiva</h3>
+            <p>El propósito de esta aplicación es traducir el extenso informe comparativo en una experiencia de usuario intuitiva y fácil de explorar. En lugar de navegar por un documento largo, puedes usar las secciones y pestañas para acceder rápidamente a la información específica que necesitas, comparar características lado a lado y entender las diferencias clave entre estas herramientas de monitorización. Esto te permitirá sintetizar la información de manera más eficiente y enfocarte en los aspectos más relevantes para tu toma de decisiones.</p>
+            <h4>Resumen Ejecutivo del Informe Original</h4>
+            <p class="mb-2">Las tres suites de productos (TMON, MainView, OMEGAMON) tienen una larga trayectoria y una base instalada considerable. Las diferencias más críticas radican en la profundidad de su integración con subsistemas específicos, la madurez y el enfoque en la adopción de IA/ML para AIOps, las filosofías de sus interfaces de usuario y la explotación de procesadores zIIP.</p>
+            <p>La elección de una herramienta no es seleccionar entre "bueno" y "malo", sino encontrar la "mejor opción" según las necesidades técnicas, relaciones con proveedores, dirección estratégica de TI y competencias del personal.</p>
+        </section>
+
+        <section id="comparativa" class="content-section">
+            <h2>Comparativa General</h2>
+            <p class="mb-6 card">Esta sección ofrece una visión comparativa de TMON, MainView y OMEGAMON a través de diferentes dimensiones clave. Utiliza las pestañas para explorar las diferencias en capacidades de monitorización, análisis e IA, interfaz y alertas, integración y arquitectura, y percepción del mercado.</p>
+            <div class="bg-white shadow rounded-lg">
+                <div class="border-b border-slate-200">
+                    <nav class="-mb-px flex space-x-4 px-4" aria-label="Tabs">
+                        <button class="tab-button active comparativa-tab" data-tab="comp-capacidades">Capacidades</button>
+                        <button class="tab-button comparativa-tab" data-tab="comp-analisis-ia">Análisis e IA</button>
+                        <button class="tab-button comparativa-tab" data-tab="comp-ui-alertas">UI y Alertas</button>
+                        <button class="tab-button comparativa-tab" data-tab="comp-integracion-ziip">Integración y zIIP</button>
+                        <button class="tab-button comparativa-tab" data-tab="comp-mercado">Mercado</button>
+                    </nav>
+                </div>
+                <div id="comp-capacidades" class="tab-content active p-4 md:p-6">
+                    <h3>Capacidades de Monitorización Central y Subsistemas</h3>
+                    <p class="mb-4">Todas las soluciones ofrecen una amplia monitorización del núcleo de z/OS y subsistemas clave. Las diferencias suelen estar en la granularidad de los datos presentados, la facilidad de acceso y la profundidad específica para ciertos componentes.</p>
+                    <div class="table-wrapper">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr>
+                                    <th>Aspecto</th>
+                                    <th>Rocket TMON</th>
+                                    <th>BMC MainView / AMI Ops</th>
+                                    <th>IBM OMEGAMON</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Monitorización z/OS</td>
+                                    <td>Cobertura completa, tiempo real.</td>
+                                    <td>Visión integral, incluyendo z/OS UNIX.</td>
+                                    <td>Sistemas individuales y Parallel Sysplex, diccionario de atributos YAML.</td>
+                                </tr>
+                                <tr>
+                                    <td>CICS</td>
+                                    <td>Gestión proactiva, KPIs específicos, correlación CICSPlex.</td>
+                                    <td>Datos en tiempo real, colectores, registros T6E detallados.</td>
+                                    <td>Gestión proactiva, AIOps para CICS, diccionario de atributos.</td>
+                                </tr>
+                                <tr>
+                                    <td>Db2</td>
+                                    <td>Tiempo real/histórico, actividad de hebras, métricas z/OS para Db2.</td>
+                                    <td>Análisis de rendimiento de apps, múltiples subsistemas Db2.</td>
+                                    <td>Ajuste de rendimiento detallado (Buffer Pool Analyzer), extensos atributos.</td>
+                                </tr>
+                                <tr>
+                                    <td>IMS</td>
+                                    <td>Gestión proactiva, análisis de contención, desglose de transacciones.</td>
+                                    <td>Salud de IMS, transacciones, carga de trabajo, amplia cobertura de estados.</td>
+                                    <td>Monitorización IMSplex, Application Trace Facility.</td>
+                                
+                                </tr>
+                                 <tr>
+                                    <td>MQ</td>
+                                    <td>Gestión centralizada, configuración, rendimiento.</td>
+                                    <td>Disponibilidad/rendimiento, lista granular de métricas.</td>
+                                    <td>Estado del gestor de colas, actividad de canales detallada.</td>
+                                </tr>
+                                <tr>
+                                    <td>Redes (TCP/IP)</td>
+                                    <td>Tiempo real/histórico, protocolos (FTP/SFTP), hardware (OSA/RoCE).</td>
+                                    <td>MainView for IP (capacidades asumidas).</td>
+                                    <td>TCP/IP y VTAM, grupos de atributos específicos.</td>
+                                </tr>
+                                <tr>
+                                    <td>Almacenamiento</td>
+                                    <td>Monitorización de E/S y DASD (TMON PA).</td>
+                                    <td>Monitorización general y AMI Storage.</td>
+                                    <td>Producto dedicado (AI for Storage), cobertura de atributos muy detallada.</td>
+                                </tr>
+                                <tr>
+                                    <td>USS</td>
+                                    <td>Cobertura general implícita.</td>
+                                    <td>Producto dedicado (MainView for UNIX System Services), monitorización detallada.</td>
+                                    <td>Datos de USS como parte de la monitorización de z/OS.</td>
+                                </tr>
+                                <tr>
+                                    <td>Recopilación de Datos</td>
+                                    <td>Tiempo real/histórico, SMF (TMON PA), logs LFS, utilidad de extracción.</td>
+                                    <td>CMF Monitor (SMF), registros T6E (CICS), datos recopilados una vez.</td>
+                                    <td>Agentes, Tivoli Management Services (TMS), atributos, OMEGAMON Data Provider.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="comp-analisis-ia" class="tab-content p-4 md:p-6">
+                    <h3>Análisis de Rendimiento, Diagnósticos, Ajuste y AIOps</h3>
+                     <p class="mb-4">Cada producto ofrece herramientas robustas para el análisis y diagnóstico, con un creciente enfoque en la inteligencia artificial para la detección proactiva de problemas.</p>
+                    <div class="table-wrapper">
+                        <table class="min-w-full">
+                             <thead>
+                                <tr>
+                                    <th>Característica</th>
+                                    <th>Rocket TMON</th>
+                                    <th>BMC MainView / AMI Ops</th>
+                                    <th>IBM OMEGAMON</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Identificación de Cuellos de Botella</td>
+                                    <td>Trazas a nivel de instrucción, análisis de retrasos/contención, TMON PA Scope.</td>
+                                    <td>Navegación guiada, AIOps para análisis de causa raíz.</td>
+                                    <td>Análisis de estados de ejecución, análisis de impacto, función "Inspect" (nivel CSECT).</td>
+                                </tr>
+                                <tr>
+                                    <td>Análisis de Cargas de Trabajo</td>
+                                    <td>Factores de tiempo de respuesta online/batch, TMON PA para descubrimiento WLM.</td>
+                                    <td>Seguimiento vs. umbrales, reorganización de prioridades (SYSPROG Services).</td>
+                                    <td>Monitorización de rendimiento vs. objetivos WLM, utilización de recursos Sysplex.</td>
+                                </tr>
+                                <tr>
+                                    <td>Asistencia para Ajuste</td>
+                                    <td>Trazas a nivel de instrucción, análisis para mejorar eficiencia de código.</td>
+                                    <td>Interfaz para cambios, SYSPROG Services para análisis proactivo y acciones.</td>
+                                    <td>Función "Inspect", Db2 PE (análisis buffer pool), identificación de recursos que afectan objetivos.</td>
+                                </tr>
+                                <tr>
+                                    <td>Detección de Anomalías (IA/ML)</td>
+                                    <td>Rocket Anomalytics: IA predictiva, ML automatizado, detección temprana.</td>
+                                    <td>BMC AMI Ops Insight: Observabilidad avanzada, modelos IA/ML autoaprendizaje.</td>
+                                    <td>IBM Z OMEGAMON AI Insights: Identifica anomalías con modelos IA/ML.</td>
+                                </tr>
+                                <tr>
+                                    <td>Analítica Predictiva</td>
+                                    <td>Rocket Anomalytics: IA predictiva.</td>
+                                    <td>(No destacado explícitamente como producto separado para predicción, pero implícito en AIOps)</td>
+                                    <td>IBM Z OMEGAMON AI Insights: Pronostica rendimiento. PFA de z/OS visible.</td>
+                                </tr>
+                                 <tr>
+                                    <td>Umbrales Impulsados por ML</td>
+                                    <td>Rocket Anomalytics: Líneas base inteligentes.</td>
+                                    <td>Umbrales dinámicos basados en aprendizaje del comportamiento normal.</td>
+                                    <td>IBM Z OMEGAMON AI Insights: Umbrales de alerta basados en análisis IA/ML.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="comp-ui-alertas" class="tab-content p-4 md:p-6">
+                    <h3>Interfaz de Usuario, Informes y Alertas</h3>
+                    <p class="mb-4">Las soluciones buscan equilibrar interfaces tradicionales 3270 con GUIs modernas, además de ofrecer capacidades robustas de informes y alertas inteligentes.</p>
+                     <div class="table-wrapper">
+                        <table class="min-w-full">
+                             <thead>
+                                <tr>
+                                    <th>Aspecto</th>
+                                    <th>Rocket TMON</th>
+                                    <th>BMC MainView / AMI Ops</th>
+                                    <th>IBM OMEGAMON</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>UI Principal</td>
+                                    <td>TMON Central, NaviPlex (Windows GUI), NaviGraph (reporting GUI), TMON PA Scope. Implícito 3270.</td>
+                                    <td>MainView Window Mode (ISPF), MainView Explorer (GUI web/local). "UI Moderna" con AMI Ops.</td>
+                                    <td>Tivoli Enterprise Portal (TEP, Java GUI), Enhanced 3270 UI (e3270UI), IBM Z Service Management Explorer (web).</td>
+                                </tr>
+                                <tr>
+                                    <td>Informes Históricos</td>
+                                    <td>Datos a corto/largo plazo, informes batch, TMON PA (publicación web), NaviGraph (exportación).</td>
+                                    <td>Almacenamiento para análisis, Performance Reporter. Reseñas mixtas sobre flexibilidad.</td>
+                                    <td>TEP (datos históricos), e3270UI (historial corto plazo), Tivoli Common Reporting. Críticas de usuarios sobre acceso fácil.</td>
+                                </tr>
+                                <tr>
+                                    <td>Alertas</td>
+                                    <td>Tiempo real, umbrales personalizables. Alertas de Anomalytics (IA/ML).</td>
+                                    <td>Umbrales dinámicos, alarmas inteligentes. MainView Alarm Manager.</td>
+                                    <td>Situaciones (basadas en umbrales). Alertas inteligentes de OMEGAMON AI. Reenvío a Netcool.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="comp-integracion-ziip" class="tab-content p-4 md:p-6">
+                     <h3>Automatización, Integración y Explotación de zIIP</h3>
+                     <p class="mb-4">La automatización y la integración con el ecosistema de TI más amplio son cruciales, al igual que la eficiencia en el uso de recursos mediante la descarga a zIIP.</p>
+                    <div class="table-wrapper">
+                        <table class="min-w-full">
+                             <thead>
+                                <tr>
+                                    <th>Capacidad</th>
+                                    <th>Rocket TMON</th>
+                                    <th>BMC MainView / AMI Ops</th>
+                                    <th>IBM OMEGAMON</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Automatización Principal</td>
+                                    <td>Parámetros inicio/parada, acciones automatizadas (TMON for CICS), Rocket Anomalytics (resolución IA).</td>
+                                    <td>MainView AutoOPERATOR (Reglas, EXECs, APIs), AMI Ops Automation (basada en políticas).</td>
+                                    <td>Comandos "Take Action" (vía TEP/e3270UI, control SAF), Situaciones pueden impulsar correcciones.</td>
+                                </tr>
+                                <tr>
+                                    <td>Integración con Plataformas de Observabilidad</td>
+                                    <td>Exportación de datos (CSV, XML, HTML), APIs de Anomalytics.</td>
+                                    <td>BMC AMI Datastream for Ops.</td>
+                                    <td>OMEGAMON Data Provider (Instana, Splunk, JSON, Prometheus).</td>
+                                </tr>
+                                <tr>
+                                    <td>Explotación de zIIP</td>
+                                    <td>TMON for z/OS reporta su uso. Rocket Data Virtualization (relacionado) hasta 99%. Usuarios desean más.</td>
+                                    <td>Hasta 50% para MainView en general. "Casi la mitad" para MVzOS/CMF.</td>
+                                    <td>Componentes específicos habilitados (CICS, z/OS UCB scan, Db2 PE NTH, Storage).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="comp-mercado" class="tab-content p-4 md:p-6">
+                    <h3>Percepción del Mercado y Experiencia del Usuario</h3>
+                    <p class="mb-4">La cuota de mercado y las opiniones de los usuarios ofrecen perspectivas valiosas sobre el posicionamiento y la usabilidad de cada solución.</p>
+                    <h4>Cuota de Mercado (PeerSpot, Mayo 2025)</h4>
+                    <div class="chart-container mb-6">
+                        <canvas id="marketShareChart"></canvas>
+                    </div>
+                    <h4>Resumen de Fortalezas y Debilidades Percibidas</h4>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="card">
+                            <h5 class="font-semibold text-lg mb-2 text-sky-700">Rocket TMON</h5>
+                            <p class="text-sm mb-1"><strong class="text-amber-600">Recomendación Usuarios (PeerSpot):</strong> 100%</p>
+                            <strong class="block mt-2">Fortalezas:</strong>
+                            <ul class="list-disc list-inside text-sm space-y-1 pl-2">
+                                <li>Fácil de instalar y usar, buen soporte.</li>
+                                <li>Potente escritor de informes batch.</li>
+                                <li>Considerado rentable.</li>
+                            </ul>
+                            <strong class="block mt-3">Debilidades/Mejoras:</strong>
+                            <ul class="list-disc list-inside text-sm space-y-1 pl-2">
+                                <li>Deseo de mayor descarga a zIIP.</li>
+                                <li>Mejor soporte móvil y visualización.</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h5 class="font-semibold text-lg mb-2 text-sky-700">BMC MainView / AMI Ops</h5>
+                             <p class="text-sm mb-1"><strong class="text-amber-600">Recomendación Usuarios (PeerSpot):</strong> 100%</p>
+                            <strong class="block mt-2">Fortalezas:</strong>
+                            <ul class="list-disc list-inside text-sm space-y-1 pl-2">
+                                <li>Resolución rápida de problemas, prevención proactiva.</li>
+                                <li>Vista centralizada para múltiples subsistemas.</li>
+                                <li>Automatización proactiva y alarmas inteligentes.</li>
+                            </ul>
+                            <strong class="block mt-3">Debilidades/Mejoras:</strong>
+                            <ul class="list-disc list-inside text-sm space-y-1 pl-2">
+                                <li>Flexibilidad del acceso a datos históricos.</li>
+                                <li>Claridad en motivos de retraso de trabajos.</li>
+                                <li>Complejidad de actualización.</li>
+                            </ul>
+                        </div>
+                        <div class="card">
+                            <h5 class="font-semibold text-lg mb-2 text-sky-700">IBM OMEGAMON</h5>
+                            <p class="text-sm mb-1"><strong class="text-amber-600">Ratings:</strong> PeerSpot: 5.0/10, TrustRadius: 5.3/10</p>
+                            <strong class="block mt-2">Fortalezas:</strong>
+                            <ul class="list-disc list-inside text-sm space-y-1 pl-2">
+                                <li>Estable.</li>
+                                <li>"Situaciones" personalizables y profundas.</li>
+                                <li>Amplia cobertura y visibilidad de PFA/Health Checks.</li>
+                            </ul>
+                            <strong class="block mt-3">Debilidades/Mejoras:</strong>
+                            <ul class="list-disc list-inside text-sm space-y-1 pl-2">
+                                <li>Dificultad para ver % de CPU utilizada directamente (según un usuario).</li>
+                                <li>Críticas sobre acceso fácil a datos históricos vs. MainView (según algunos usuarios).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tmon" class="content-section card">
+            <h2>Rocket TMON for z/OS</h2>
+            <p class="mb-4">Rocket TMON for z/OS se posiciona como un sistema completo de monitorización del rendimiento de z/OS, enfocado en tiempo real y exhaustividad. Busca satisfacer necesidades de analistas de rendimiento, planificadores de capacidad y operadores.</p>
+            <h4>Puntos Clave:</h4>
+            <ul class="list-disc list-inside space-y-1 mb-4 pl-4">
+                <li><strong>Monitorización:</strong> Afirma cubrir "cada área de IBM z/OS". Incluye TMON for CICS, Db2, IMS, MQ, Redes y Almacenamiento (con TMON PA).</li>
+                <li><strong>Análisis y Diagnóstico:</strong> Trazas a nivel de instrucción, análisis de retrasos y contención. Rocket Anomalytics para IA predictiva y detección de anomalías.</li>
+                <li><strong>Interfaz:</strong> TMON Central, NaviPlex (GUI Windows), NaviGraph (informes), TMON PA Scope.</li>
+                <li><strong>Automatización e Integración:</strong> Parámetros de inicio/parada, acciones en TMON for CICS, APIs de Anomalytics, utilidad de extracción de datos.</li>
+                <li><strong>Arquitectura y zIIP:</strong> Componentes como LFS, Health Monitor. Reporta su uso de zIIP; usuarios expresan deseo de mayor descarga.</li>
+                <li><strong>Mercado:</strong> 13.1% cuota (PeerSpot Mayo 2025). Valorado por facilidad de uso, soporte y costo.</li>
+            </ul>
+            <p>Más detalles se pueden explorar en las secciones correspondientes del informe completo.</p>
+        </section>
+
+        <section id="mainview" class="content-section card">
+            <h2>BMC MainView for z/OS / AMI Ops</h2>
+            <p class="mb-4">BMC MainView, evolucionado a BMC AMI Ops, enfatiza una imagen única del sistema, análisis impulsados por IA, automatización inteligente y navegación guiada para reducir el MTTR.</p>
+            <h4>Puntos Clave:</h4>
+            <ul class="list-disc list-inside space-y-1 mb-4 pl-4">
+                <li><strong>Monitorización:</strong> Visión integral de z/OS, incluyendo UNIX System Services. Monitores específicos para CICS (registros T6E), Db2, IMS, MQ, IP, Almacenamiento (AMI Storage).</li>
+                <li><strong>Análisis y Diagnóstico:</strong> Navegación guiada, AIOps con AMI Ops Insight para análisis de causa raíz y detección de anomalías, umbrales dinámicos.</li>
+                <li><strong>Interfaz:</strong> MainView Window Mode (ISPF), MainView Explorer (GUI web/local rica en gráficos).</li>
+                <li><strong>Automatización e Integración:</strong> MainView AutoOPERATOR (automatización por reglas/EXECs), AMI Datastream for Ops para plataformas de observabilidad.</li>
+                <li><strong>Arquitectura y zIIP:</strong> Arquitectura MainView (CAS, PAS). Afirmaciones de descarga de hasta 50% a zIIP para componentes clave.</li>
+                <li><strong>Mercado:</strong> 19.2% cuota (PeerSpot Mayo 2025). Valorado por rápida resolución de problemas y vista centralizada.</li>
+            </ul>
+             <p>Más detalles se pueden explorar en las secciones correspondientes del informe completo.</p>
+        </section>
+
+        <section id="omegamon" class="content-section card">
+            <h2>IBM OMEGAMON for z/OS</h2>
+            <p class="mb-4">IBM OMEGAMON se caracteriza por su profunda integración con el ecosistema z/OS de IBM y su arquitectura basada en Tivoli Management Services (TMS). Permite monitorizar sistemas z/OS individuales y el Parallel Sysplex.</p>
+            <h4>Puntos Clave:</h4>
+            <ul class="list-disc list-inside space-y-1 mb-4 pl-4">
+                <li><strong>Monitorización:</strong> Cobertura de Sysplex, LPARs, coprocesadores criptográficos, USS. Monitores extensos para CICS (AIOps), Db2 (ajuste detallado), IMS (IMSplex), MQ, Redes (TCP/IP y VTAM), Almacenamiento (AI for Storage con atributos detallados). Diccionario de atributos YAML.</li>
+                <li><strong>Análisis y Diagnóstico:</strong> Análisis de estados de ejecución de cargas de trabajo, análisis de impacto, función "Inspect" (nivel CSECT). OMEGAMON AI for z/OS y AI Insights para detección de anomalías y pronóstico.</li>
+                <li><strong>Interfaz:</strong> Tivoli Enterprise Portal (TEP, GUI Java), Enhanced 3270 UI (e3270UI), IBM Z Service Management Explorer (web).</li>
+                <li><strong>Automatización e Integración:</strong> Comandos "Take Action" (control SAF), Situaciones pueden desencadenar correcciones. OMEGAMON Data Provider para integración con Splunk, Instana. Integración con Netcool, IBM Z ChatOps.</li>
+                <li><strong>Arquitectura y zIIP:</strong> Basado en Tivoli Management Services (TEMS, TEPS, Agentes). Varios componentes habilitados para zIIP (CICS, z/OS UCB scan, Db2 NTH, Storage).</li>
+                <li><strong>Mercado:</strong> 27.4% cuota (PeerSpot Mayo 2025). Valorado por estabilidad y "Situaciones" profundas. Críticas de algunos usuarios sobre acceso a datos históricos en TEP.</li>
+            </ul>
+            <p>Más detalles se pueden explorar en las secciones correspondientes del informe completo.</p>
+        </section>
+
+        <section id="conclusiones" class="content-section card">
+            <h2>Conclusiones del Informe y Consideraciones Clave</h2>
+            <p class="mb-4">La elección entre Rocket TMON, BMC MainView/AMI Ops e IBM OMEGAMON es una decisión estratégica que depende de las prioridades específicas de la organización, su infraestructura, las competencias del personal y la dirección tecnológica futura. Todas son soluciones maduras y potentes.</p>
+
+            <h4 class="mt-4">Resumen de Fortalezas Distintivas:</h4>
+            <ul class="list-disc list-inside space-y-2 pl-4">
+                <li><strong>Rocket TMON:</strong> Énfasis en tiempo real, cobertura exhaustiva, buena relación costo-beneficio percibida, emergente IA/ML con Anomalytics.</li>
+                <li><strong>BMC MainView/AMI Ops:</strong> Arquitectura centralizada, GUI rica (MainView Explorer), fuerte apuesta por AIOps (AMI Ops Insight), automatización con AutoOPERATOR, claras afirmaciones de explotación de zIIP.</li>
+                <li><strong>IBM OMEGAMON:</strong> Profunda integración con ecosistema IBM/TMS, granularidad de datos excepcional (atributos, Data Provider), potentes diagnósticos profundos (Inspect), amplia cobertura de subsistemas IBM, IA con OMEGAMON AI Insights.</li>
+            </ul>
+
+            <h4 class="mt-6">Consideraciones Clave para la Decisión (según el informe):</h4>
+            <ol class="list-decimal list-inside space-y-2 pl-4">
+                <li><strong>Profundidad de Monitorización de Subsistemas Críticos:</strong> Evaluar cobertura y métricas para CICS, Db2, IMS, MQ, etc.</li>
+                <li><strong>Estrategia de AIOps y Automatización:</strong> Madurez de IA/ML, integración con plataformas AIOps empresariales, capacidades de automatización nativas.</li>
+                <li><strong>Interfaz de Usuario y Experiencia Operativa:</strong> Preferencia 3270 vs. GUI, facilidad de navegación, personalización, curva de aprendizaje.</li>
+                <li><strong>Acceso a Datos e Integración:</strong> Exportación, APIs, integración con herramientas de gestión, observabilidad (Splunk, Instana), ITSM.</li>
+                <li><strong>Consumo de Recursos y Explotación de zIIP:</strong> Impacto en recursos del sistema, eficacia en descarga a zIIP.</li>
+                <li><strong>Ecosistema del Proveedor y Relaciones Existentes:</strong> Inversiones previas, integración y soporte.</li>
+            </ol>
+            <p class="mt-4">El informe original recomienda encarecidamente realizar una Prueba de Concepto (PoC) exhaustiva antes de tomar una decisión final.</p>
+        </section>
+    </main>
+
+    <footer class="text-center p-6 mt-8 border-t border-slate-300">
+        <p class="text-sm text-slate-500">Aplicación generada a partir de un análisis comparativo de soluciones de monitorización z/OS.</p>
+    </footer>
+
+    <script>
+        const navButtons = document.querySelectorAll('.nav-button');
+        const contentSections = document.querySelectorAll('.content-section');
+        const comparativaTabButtons = document.querySelectorAll('.comparativa-tab');
+        const comparativaTabContents = document.querySelectorAll('#comparativa .tab-content');
+
+        function setActiveSection(targetId) {
+            contentSections.forEach(section => {
+                section.classList.toggle('active', section.id === targetId);
+            });
+            navButtons.forEach(button => {
+                button.classList.toggle('active', button.dataset.target === targetId);
+                button.classList.toggle('text-sky-600', button.dataset.target === targetId);
+                button.classList.toggle('font-semibold', button.dataset.target === targetId);
+            });
+        }
+
+        function setActiveTab(tabs, contents, targetTabId) {
+            tabs.forEach(button => {
+                button.classList.toggle('active', button.dataset.tab === targetTabId);
+            });
+            contents.forEach(content => {
+                content.classList.toggle('active', content.id === targetTabId);
+            });
+        }
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                setActiveSection(button.dataset.target);
+                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        comparativaTabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                setActiveTab(comparativaTabButtons, comparativaTabContents, button.dataset.tab);
+            });
+        });
+
+        // Initialize with the introduction section
+        setActiveSection('introduccion');
+        if (document.getElementById('comp-capacidades')) {
+             setActiveTab(comparativaTabButtons, comparativaTabContents, 'comp-capacidades');
+        }
+
+        // Chart.js for Market Share
+        const marketShareCtx = document.getElementById('marketShareChart');
+        if (marketShareCtx) {
+            new Chart(marketShareCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['IBM OMEGAMON', 'BMC MainView / AMI Ops', 'Rocket TMON'],
+                    datasets: [{
+                        label: 'Cuota de Mercado (%) (PeerSpot Mayo 2025)',
+                        data: [27.4, 19.2, 13.1],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)', // blue-500
+                            'rgba(16, 185, 129, 0.7)', // emerald-500
+                            'rgba(249, 115, 22, 0.7)'  // orange-500
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(249, 115, 22, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '%'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
